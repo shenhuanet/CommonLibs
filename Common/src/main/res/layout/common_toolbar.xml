@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@id/common_toolbar"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/colorAccent"
-    android:gravity="center"
-    android:minHeight="?attr/actionBarSize"
-    android:paddingTop="@dimen/common_toolbar_padding_top">
+    style="@style/CommonToolbar">
 
-    <View
-        android:layout_width="1px"
-        android:layout_height="55dp" />
+    <!--<View-->
+    <!--android:layout_width="1px"-->
+    <!--android:layout_height="55dp" />-->
 
 </android.support.v7.widget.Toolbar>
