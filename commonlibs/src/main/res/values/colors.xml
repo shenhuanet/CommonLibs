@@ -5,4 +5,7 @@
     <color name="colorPrimaryDark">#278DF1</color>
     <color name="colorAccent">#27C985</color>
 
+    <color name="common_action_label_dark">#576069</color>
+    <color name="common_action_hint_label">#80576069</color>
+
 </resources>
