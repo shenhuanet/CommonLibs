@@ -23,6 +23,19 @@ public class NetworkUtils {
      * @param context context
      * @return true is connected
      */
+    public static boolean isConnectedNet(Context context) {
+        boolean wifiConnected = isWifiConnected(context);
+        boolean mobileConnected = isMobileConnected(context);
+        return !(!wifiConnected && !mobileConnected);
+    }
+
+    /**
+     * 判断网络是否连接
+     *
+     * @param context context
+     * @return true is connected
+     */
+    @Deprecated
     public static boolean isConnected(Context context) {
         ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (null != connectivity) {
@@ -42,9 +55,21 @@ public class NetworkUtils {
      * @param context context
      * @return true is ues wifi
      */
-    public static boolean isWifi(Context context) {
+    public static boolean isWifiConnected(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm != null && cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_WIFI;
+    }
+
+    /**
+     * 判断是否是2G/3G/4G连接
+     *
+     * @param context context
+     * @return true is ues mobile
+     */
+    public static boolean isMobileConnected(Context context) {
+        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        return networkInfo != null && networkInfo.isConnected();
     }
 
     /**

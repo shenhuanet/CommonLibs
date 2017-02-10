@@ -221,4 +221,32 @@ public class CommonFileUtils {
             file.delete();
         }
     }
+
+    /**
+     * 读取Assets目录下面指定文件并返回String数据
+     *
+     * @param context  context
+     * @param fileName fileName
+     * @return string
+     */
+    public static String getJsonDataFromAssets(Context context, String fileName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        InputStream inputStream = context.getClass().getClassLoader().getResourceAsStream("assets/" + fileName);
+        try {
+            byte[] buffer = new byte[inputStream.available()];
+            inputStream.read(buffer);
+            String json = new String(buffer, "utf-8");
+            stringBuilder = stringBuilder.append(json);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return stringBuilder.toString();
+    }
+
 }
