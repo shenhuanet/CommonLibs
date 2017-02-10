@@ -1,6 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.neenbedankt.android-apt'
-apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
@@ -22,11 +20,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
     lintOptions {
         abortOnError false
     }
@@ -37,7 +30,6 @@ android {
             links "http://docs.oracle.com/javase/7/docs/api"
         }
     }
-
 }
 
 dependencies {
@@ -51,14 +43,6 @@ dependencies {
     compile 'com.android.support:cardview-v7:25.1.0'
     testCompile 'junit:junit:4.12'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'io.reactivex:rxjava:1.1.6'
-    compile 'io.reactivex:rxandroid:0.25.0'
-    compile 'com.tbruyelle.rxpermissions:rxpermissions:0.9.1@aar'
-    compile 'com.jakewharton:butterknife:8.4.0'
-    apt 'com.jakewharton:butterknife-compiler:8.4.0'
-	compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.squareup:otto:1.3.8'
-    compile 'com.shenhua.libs:bannerview:1.0'
 }
 
 ext {
