@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 2
-        versionName "2.1"
+        versionCode 1
+        versionName "1.0.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -25,7 +25,8 @@ android {
     }
 
     tasks.withType(Javadoc) {
-        options{ encoding "UTF-8"
+        options {
+            encoding "UTF-8"
             charSet 'UTF-8'
             links "http://docs.oracle.com/javase/7/docs/api"
         }
@@ -55,7 +56,7 @@ ext {
     libraryDescription = 'shenhua common libraries.'
     siteUrl = 'https://github.com/shenhuanet/shenhua-commonLib'
     gitUrl = 'https://github.com/shenhuanet/shenhua-commonLib.git'
-    libraryVersion = '2.1'
+    libraryVersion = '1.0.0'
     developerId = 'shenhua'
     developerName = 'shenhua'
     developerEmail = 'shenhuanet@126.com'
