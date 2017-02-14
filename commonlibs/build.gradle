@@ -8,7 +8,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 2
-        versionName "2.0"
+        versionName "2.1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -55,7 +55,7 @@ ext {
     libraryDescription = 'shenhua common libraries.'
     siteUrl = 'https://github.com/shenhuanet/shenhua-commonLib'
     gitUrl = 'https://github.com/shenhuanet/shenhua-commonLib.git'
-    libraryVersion = '2.0'
+    libraryVersion = '2.1'
     developerId = 'shenhua'
     developerName = 'shenhua'
     developerEmail = 'shenhuanet@126.com'
