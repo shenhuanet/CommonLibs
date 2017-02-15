@@ -7,14 +7,14 @@ import android.content.SharedPreferences;
  * Created by shenhua on 2/10/2017.
  * Email shenhuanet@126.com
  */
-public class PreferenceUtil {
+public class PreferenceUtils {
 
-    private static PreferenceUtil instance = null;
+    private static PreferenceUtils instance = null;
     private static String name = null;
 
-    public static PreferenceUtil getInstance(String preferenceName) {
+    public static PreferenceUtils getInstance(String preferenceName) {
         if (instance == null) {
-            instance = new PreferenceUtil();
+            instance = new PreferenceUtils();
             name = preferenceName;
         }
         return instance;
