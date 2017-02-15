@@ -24,9 +24,13 @@ public class NetworkUtils {
      * @return true is connected
      */
     public static boolean isConnectedNet(Context context) {
-        boolean wifiConnected = isWifiConnected(context);
-        boolean mobileConnected = isMobileConnected(context);
-        return !(!wifiConnected && !mobileConnected);
+        try {
+            boolean wifiConnected = isWifiConnected(context);
+            boolean mobileConnected = isMobileConnected(context);
+            return !(!wifiConnected && !mobileConnected);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
@@ -67,9 +71,8 @@ public class NetworkUtils {
      * @return true is ues mobile
      */
     public static boolean isMobileConnected(Context context) {
-        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        return networkInfo != null && networkInfo.isConnected();
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm != null && cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_MOBILE;
     }
 
     /**
