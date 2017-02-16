@@ -8,7 +8,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0.0"
+        versionName "1.0.1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -50,7 +50,6 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     compile 'io.reactivex:rxjava:1.2.6'
     compile 'io.reactivex:rxandroid:1.2.1'
-    compile 'com.xyzlf.share:sharesdk:0.0.7'
 }
 
 ext {
@@ -63,7 +62,7 @@ ext {
     libraryDescription = 'shenhua common libraries.'
     siteUrl = 'https://github.com/shenhuanet/shenhua-commonLib'
     gitUrl = 'https://github.com/shenhuanet/shenhua-commonLib.git'
-    libraryVersion = '1.0.0'
+    libraryVersion = '1.0.1'
     developerId = 'shenhua'
     developerName = 'shenhua'
     developerEmail = 'shenhuanet@126.com'

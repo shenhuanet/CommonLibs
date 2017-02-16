@@ -3,7 +3,6 @@ package com.shenhua.commonlibs.mvp;
 import android.content.Context;
 
 import com.shenhua.commonlibs.utils.NetworkUtils;
-import com.shenhua.libs.common.BuildConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +27,7 @@ import rx.Subscriber;
  */
 public class HttpManager {
 
-    private static Retrofit retrofit;
+    private Retrofit retrofit;
     private OkHttpClient okHttpClient;
     private Context context;
 
@@ -54,11 +53,11 @@ public class HttpManager {
     public OkHttpClient getOkHttpClient() {
         if (okHttpClient == null) {
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
-            if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-                builder.addInterceptor(loggingInterceptor);
-            }
+//            if (debug) {
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            builder.addInterceptor(loggingInterceptor);
+//            }
             File cacheDir = new File(context.getExternalCacheDir(), "myCache");
             int cacheSize = 10 * 1024 * 1024; //10MB
             Cache cache = new Cache(cacheDir, cacheSize);

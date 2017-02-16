@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -25,6 +26,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.shenhua.commonlibs.annotation.ActivityFragmentInject;
 import com.shenhua.libs.common.R;
@@ -44,7 +46,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initFitsWindow();
         int mContentViewId;
         if (getClass().isAnnotationPresent(ActivityFragmentInject.class)) {
             ActivityFragmentInject annotation = getClass().getAnnotation(ActivityFragmentInject.class);
@@ -130,8 +131,16 @@ public abstract class BaseActivity extends AppCompatActivity {
         Snackbar.make(getDecorView(), msg, Snackbar.LENGTH_SHORT).show();
     }
 
-    protected void showSnackBar(int id) {
+    protected void showSnackBar(@StringRes int id) {
         Snackbar.make(getDecorView(), id, Snackbar.LENGTH_SHORT).show();
+    }
+
+    public void toast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    public void toast(@StringRes int resId) {
+        Toast.makeText(this, resId, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -141,27 +150,6 @@ public abstract class BaseActivity extends AppCompatActivity {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Activity场景切换动画
-     *
-     * @param intent            intent
-     * @param requestCode       requestCode
-     * @param view              需要场景变换的控件的父布局
-     * @param viewId            需要场景变换的控件的id
-     * @param sharedElementName 接受场景变换的控件的sharedElementName，需要在布局文件中指定
-     */
-    public void sceneTransitionTo(Intent intent, int requestCode, View view, int viewId, String sharedElementName) {
-        if (Build.VERSION.SDK_INT > 21) {
-            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this,
-                    view.findViewById(viewId), sharedElementName);
-            startActivityForResult(intent, requestCode, options.toBundle());
-        } else {
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(view,
-                    view.getWidth() / 2, view.getHeight() / 2, 0, 0);
-            ActivityCompat.startActivityForResult(this, intent, requestCode, options.toBundle());
-        }
     }
 
     @Override
@@ -203,6 +191,27 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected void onNetWorkIsError() {
 
+    }
+
+    /**
+     * Activity场景切换动画
+     *
+     * @param intent            intent
+     * @param requestCode       requestCode
+     * @param view              需要场景变换的控件的父布局
+     * @param viewId            需要场景变换的控件的id
+     * @param sharedElementName 接受场景变换的控件的sharedElementName，需要在布局文件中指定
+     */
+    public void sceneTransitionTo(Intent intent, int requestCode, View view, int viewId, String sharedElementName) {
+        if (Build.VERSION.SDK_INT > 21) {
+            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this,
+                    view.findViewById(viewId), sharedElementName);
+            startActivityForResult(intent, requestCode, options.toBundle());
+        } else {
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(view,
+                    view.getWidth() / 2, view.getHeight() / 2, 0, 0);
+            ActivityCompat.startActivityForResult(this, intent, requestCode, options.toBundle());
+        }
     }
 
     public void hideKeyboard() {

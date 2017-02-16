@@ -1,6 +1,6 @@
 package com.shenhua.commonlibs.base;
 
-import android.app.Fragment;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,7 +10,9 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -21,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.shenhua.commonlibs.annotation.ActivityFragmentInject;
 
@@ -30,8 +33,9 @@ import com.shenhua.commonlibs.annotation.ActivityFragmentInject;
  */
 public abstract class BaseFragment extends Fragment {
 
+    private Activity activity;
     NetworkReceiver netReceiver;
-    private View rootView;
+    protected View rootView;
     private boolean hasOptionsMenu;
     private int mToolbarId;
     private int mToolbarTitle;
@@ -47,7 +51,9 @@ public abstract class BaseFragment extends Fragment {
         setHasOptionsMenu(hasOptionsMenu);
         netReceiver = new NetworkReceiver();
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        getActivity().registerReceiver(netReceiver, filter);
+        activity = getActivity();
+        if (activity != null)
+            activity.registerReceiver(netReceiver, filter);
     }
 
     @Nullable
@@ -76,10 +82,12 @@ public abstract class BaseFragment extends Fragment {
     private void initToolbar() {
         if (mToolbarId == -1) return;
         Toolbar toolbar = (Toolbar) rootView.findViewById(mToolbarId);
-        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-        ActionBar ab = getToolbar();
-        assert ab != null;
-        ab.setTitle("");
+        if (activity != null) {
+            ((AppCompatActivity) activity).setSupportActionBar(toolbar);
+            ActionBar ab = getToolbar();
+            assert ab != null;
+            ab.setTitle("");
+        }
     }
 
     public void setToolbarTitle(@IdRes int titleId) {
@@ -93,15 +101,23 @@ public abstract class BaseFragment extends Fragment {
     }
 
     protected ActionBar getToolbar() {
-        return ((AppCompatActivity) getActivity()).getSupportActionBar();
+        return ((AppCompatActivity) activity).getSupportActionBar();
     }
 
     protected void showSnackBar(String msg) {
         Snackbar.make(rootView, msg, Snackbar.LENGTH_SHORT).show();
     }
 
-    protected void showSnackBar(int id) {
+    protected void showSnackBar(@StringRes int id) {
         Snackbar.make(rootView, id, Snackbar.LENGTH_SHORT).show();
+    }
+
+    public void toast(String msg) {
+        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+    }
+
+    public void toast(@StringRes int resId) {
+        Toast.makeText(getContext(), resId, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -123,7 +139,8 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        getActivity().unregisterReceiver(netReceiver);
+        if (activity != null)
+            activity.unregisterReceiver(netReceiver);
     }
 
     public class NetworkReceiver extends BroadcastReceiver {
@@ -152,12 +169,13 @@ public abstract class BaseFragment extends Fragment {
     }
 
     public void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm.isActive() && getActivity().getCurrentFocus() != null) {
-            if (getActivity().getCurrentFocus().getWindowToken() != null) {
-                imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        if (activity != null) {
+            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm.isActive() && activity.getCurrentFocus() != null) {
+                if (activity.getCurrentFocus().getWindowToken() != null) {
+                    imm.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                }
             }
         }
     }
-
 }
