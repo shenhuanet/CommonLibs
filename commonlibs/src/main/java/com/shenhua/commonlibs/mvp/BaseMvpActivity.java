@@ -11,7 +11,7 @@ import com.shenhua.commonlibs.base.BaseActivity;
  * Created by shenhua on 2/16/2017.
  * Email shenhuanet@126.com
  */
-public class BaseMvpActivity<P extends BasePresenter<V>, V extends BaseView> extends BaseActivity implements BaseView, LoaderManager.LoaderCallbacks<P> {
+public abstract class BaseMvpActivity<P extends BasePresenter<V>, V extends BaseView> extends BaseActivity implements BaseView, LoaderManager.LoaderCallbacks<P> {
 
     protected P mPresenter;
 
@@ -20,13 +20,11 @@ public class BaseMvpActivity<P extends BasePresenter<V>, V extends BaseView> ext
         super.onCreate(savedInstanceState);
         int BASE_LOADER_ID = 0x1000000;
         getSupportLoaderManager().initLoader(BASE_LOADER_ID, null, this);//初始化loader
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
+        mPresenter = createPresenter();
         mPresenter.attachView((V) this);
     }
+
+    public abstract P createPresenter();
 
     @Override
     public Loader<P> onCreateLoader(int id, Bundle args) {
