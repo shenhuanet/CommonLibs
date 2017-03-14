@@ -111,14 +111,14 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<BaseRe
         boolean OnItemLongClick(View view, int position, T data);
     }
 
-    static class BaseRecyclerViewHolder extends RecyclerView.ViewHolder {
+    public static class BaseRecyclerViewHolder extends RecyclerView.ViewHolder {
 
         //集合类，layout里包含的View,以view的id作为key，value是view对象
         private SparseArray<View> mViews;
         private Context mContext;
         private int viewType;
 
-        BaseRecyclerViewHolder(Context context, View itemView, int viewType) {
+        public BaseRecyclerViewHolder(Context context, View itemView, int viewType) {
             super(itemView);
             mContext = context;
             mViews = new SparseArray<>();
