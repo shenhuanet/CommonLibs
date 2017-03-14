@@ -11,6 +11,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 /**
@@ -19,10 +21,10 @@ import java.util.List;
  */
 public abstract class BaseListAdapter<T> extends BaseAdapter {
 
-    protected Context mContext;
-    private List<T> mDatas;
+    public Context mContext;
+    public List<T> mDatas;
 
-    protected BaseListAdapter(Context context, List<T> datas) {
+    public BaseListAdapter(Context context, List<T> datas) {
         this.mContext = context;
         this.mDatas = datas;
     }
@@ -68,8 +70,10 @@ public abstract class BaseListAdapter<T> extends BaseAdapter {
         private SparseArray<View> mViews;
         //复用的view
         private View convertView;
+        private Context context;
 
         private BaseViewHolder(Context context, int position, int layoutId, ViewGroup parent) {
+            this.context = context;
             this.mPosition = position;
             mViews = new SparseArray<>();
             convertView = LayoutInflater.from(context).inflate(layoutId, parent, false);
@@ -138,6 +142,24 @@ public abstract class BaseListAdapter<T> extends BaseAdapter {
 
         public BaseViewHolder setImageResource(int resourceId, int resId) {
             ((ImageView) getView(resourceId)).setImageResource(resId);
+            return this;
+        }
+
+        public BaseViewHolder setImage(int viewId, int resId) {
+            ImageView view = ((ImageView) getView((viewId)));
+            Glide.with(context).load(resId).centerCrop().into(view);
+            return this;
+        }
+
+        public BaseViewHolder setImage(int viewId, String url) {
+            ImageView view = ((ImageView) getView((viewId)));
+            Glide.with(context).load(url).centerCrop().into(view);
+            return this;
+        }
+
+        public BaseViewHolder setImage(int viewId, Drawable drawable) {
+            ImageView view = ((ImageView) getView((viewId)));
+            Glide.with(context).load(drawable).centerCrop().into(view);
             return this;
         }
 

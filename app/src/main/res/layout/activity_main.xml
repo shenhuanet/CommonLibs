@@ -7,10 +7,25 @@
     android:orientation="vertical"
     tools:context="com.shenhua.shenhua_commonlib.MainActivity">
 
-    <include layout="@layout/common_toolbar" />
+    <include layout="@layout/layout_toolbar" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_margin="30dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:onClick="request"
+        android:text="请求" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:onClick="read"
+        android:text="读取缓存" />
+
+
 </LinearLayout>

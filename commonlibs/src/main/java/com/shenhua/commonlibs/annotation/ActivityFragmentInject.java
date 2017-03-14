@@ -26,7 +26,11 @@ public @interface ActivityFragmentInject {
 
     @StringRes int toolbarTitle() default -1;// toolbar 标题
 
+    @IdRes int toolbarTitleId() default -1;// toolbar textView
+
     boolean hasOptionsMenu() default false;// 是否允许溢出菜单（仅Fragment中使用）
 
     @MenuRes int menuId() default -1;// 菜单Id
+
+    boolean useBusEvent() default false;// 使用BusEvent
 }

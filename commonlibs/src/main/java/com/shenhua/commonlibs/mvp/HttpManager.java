@@ -2,6 +2,7 @@ package com.shenhua.commonlibs.mvp;
 
 import android.content.Context;
 
+import com.shenhua.commonlibs.utils.HttpRequestException;
 import com.shenhua.commonlibs.utils.NetworkUtils;
 
 import org.jsoup.Connection;
@@ -35,8 +36,14 @@ import rx.Subscriber;
 public class HttpManager {
 
     private static HttpManager instance = null;
+    private static final String CACHE_DIR = "myCache";
     public static final String USER_AGENT = "MQQBrowser/26 Mozilla/5.0 (Linux; U; Android 2.3.7; zh-cn; MB200 Build/GRJ22; CyanogenMod-7) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1";
     public static final String CONNECTION = "keep-alive";
+    public static final int HTTP_STATUS_OK = 200;
+    public static final int HTTP_STATUS_REDIRECT = 302;
+    public static final int HTTP_STATUS_FORBIDDEN = 403;
+    public static final int HTTP_STATUS_NOT_FOUND = 404;
+    public static final int HTTP_STATUS_UNAVAILABLE = 504;
     private Retrofit retrofit;
     private static volatile OkHttpClient okHttpClient;
     private static ExecutorService executorService;
@@ -73,7 +80,7 @@ public class HttpManager {
                 HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
                 loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
                 builder.addInterceptor(loggingInterceptor);
-                File cacheDir = new File(context.getExternalCacheDir(), "myCache");
+                File cacheDir = new File(context.getExternalCacheDir(), CACHE_DIR);
                 int cacheSize = 10 * 1024 * 1024; //10MB
                 Cache cache = new Cache(cacheDir, cacheSize);
                 builder.cache(cache);
@@ -127,9 +134,23 @@ public class HttpManager {
                 Call call = getOkHttpClient(context).newCall(request);
                 try {
                     Response response = call.execute();
-                    subscriber.onNext(response.body().string());
+                    int statusCode = response.code();
+                    switch (statusCode) {
+                        case HTTP_STATUS_OK:
+                            subscriber.onNext(response.body().string());
+                            break;
+                        case HTTP_STATUS_REDIRECT:// 重定向
+                        case HTTP_STATUS_FORBIDDEN:
+                        case HTTP_STATUS_NOT_FOUND:
+                        case HTTP_STATUS_UNAVAILABLE:
+                            subscriber.onError(new HttpRequestException(statusCode, "error"));
+                            break;
+                        default:
+                            subscriber.onNext(response.body().string());
+                            break;
+                    }
                     subscriber.onCompleted();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     subscriber.onError(e);
                 }
@@ -159,5 +180,15 @@ public class HttpManager {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public String getCache(Context context, String url) throws Exception {
+        Request request = new Request.Builder()
+                .cacheControl(new CacheControl.Builder().onlyIfCached().build()).url(url).build();
+        Call call = getOkHttpClient(context).newCall(request);
+        Response response = call.execute();
+        if (response.code() == HTTP_STATUS_UNAVAILABLE)
+            return null;
+        return response.body().toString();
     }
 }

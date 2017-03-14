@@ -1,6 +1,6 @@
 package com.shenhua.commonlibs.mvp;
 
-import android.text.TextUtils;
+import com.shenhua.commonlibs.utils.HttpRequestException;
 
 import retrofit2.adapter.rxjava.HttpException;
 import rx.Subscriber;
@@ -38,24 +38,15 @@ public abstract class ApiCallback<M> extends Subscriber<M> {
     @Override
     public void onError(Throwable e) {
         String msg;
-        if (e instanceof HttpException) {
-            HttpException httpException = (HttpException) e;
-            int code = httpException.code();
-            msg = httpException.getMessage();
-            if (code == 504) {
-                msg = "网络不给力";
-            }
-            if (code == 502 || code == 404) {
-                msg = "服务器异常，请稍后再试";
-            }
-        } else {
-            msg = e.getMessage();
-            if (msg.contains("Unable to resolve")) {
-                msg = "网络未连接";
-            }
+        if (e instanceof HttpRequestException) {
+            HttpRequestException httpRequestException = (HttpRequestException) e;
+            onFailure(httpRequestException.getMsg());
         }
-        if (!TextUtils.isEmpty(msg)) {
-            onFailure(msg);
+        if (e instanceof HttpException) {
+            if (e.getMessage().contains("Unable to resolve")) {
+                msg = "网络未连接";
+                onFailure(msg);
+            }
         }
         onFinish();
     }

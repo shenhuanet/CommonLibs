@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
@@ -26,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.shenhua.commonlibs.annotation.ActivityFragmentInject;
+import com.shenhua.commonlibs.utils.BusProvider;
 
 /**
  * Fragment基类
@@ -39,7 +39,9 @@ public abstract class BaseFragment extends Fragment {
     private boolean hasOptionsMenu;
     private int mToolbarId;
     private int mToolbarTitle;
+    private int mToolbarTitleId;
     private int mMenuId;
+    private boolean mUseBusEvent;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,6 +49,7 @@ public abstract class BaseFragment extends Fragment {
         if (getClass().isAnnotationPresent(ActivityFragmentInject.class)) {
             ActivityFragmentInject annotation = getClass().getAnnotation(ActivityFragmentInject.class);
             hasOptionsMenu = annotation.hasOptionsMenu();
+            mUseBusEvent = annotation.useBusEvent();
         }
         setHasOptionsMenu(hasOptionsMenu);
         netReceiver = new NetworkReceiver();
@@ -66,6 +69,7 @@ public abstract class BaseFragment extends Fragment {
                 mContentViewId = annotation.contentViewId();
                 mToolbarId = annotation.toolbarId();
                 mToolbarTitle = annotation.toolbarTitle();
+                mToolbarTitleId = annotation.toolbarTitleId();
                 mMenuId = annotation.menuId();
             } else {
                 throw new RuntimeException("BaseFragment:Class must add annotations of ActivityFragmentInitParams.class");
@@ -90,14 +94,28 @@ public abstract class BaseFragment extends Fragment {
         }
     }
 
-    public void setToolbarTitle(@IdRes int titleId) {
-        TextView textView = (TextView) rootView.findViewById(titleId);
-        if (textView != null) textView.setText(mToolbarTitle);
+    public void setupToolbarTitle(String str) {
+        TextView textView = (TextView) rootView.findViewById(mToolbarTitleId);
+        if (textView != null) textView.setText(str);
     }
 
-    public void setToolbarTitle(String str, @IdRes int titleId) {
-        TextView textView = (TextView) rootView.findViewById(titleId);
-        if (textView != null) textView.setText(str);
+    public void setupToolbarTitle(int resId) {
+        TextView textView = (TextView) rootView.findViewById(mToolbarTitleId);
+        if (textView != null) textView.setText(resId);
+    }
+
+    public void setupActionbarTitle(String str) {
+        ActionBar actionBar = getToolbar();
+        if (actionBar != null) {
+            actionBar.setTitle(str);
+        }
+    }
+
+    public void setupActionbarTitle(int resId) {
+        ActionBar actionBar = getToolbar();
+        if (actionBar != null) {
+            actionBar.setTitle(resId);
+        }
     }
 
     protected ActionBar getToolbar() {
@@ -128,6 +146,13 @@ public abstract class BaseFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (mUseBusEvent)
+            BusProvider.getInstance().register(this);
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         ViewGroup parent = (ViewGroup) rootView.getParent();
@@ -139,8 +164,11 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (activity != null)
+        if (mUseBusEvent)
+            BusProvider.getInstance().unregister(this);
+        if (activity != null) {
             activity.unregisterReceiver(netReceiver);
+        }
     }
 
     public class NetworkReceiver extends BroadcastReceiver {

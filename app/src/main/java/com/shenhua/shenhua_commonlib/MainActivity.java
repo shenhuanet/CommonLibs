@@ -1,27 +1,58 @@
 package com.shenhua.shenhua_commonlib;
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
 
-public class MainActivity extends AppCompatActivity {
+import com.shenhua.commonlibs.annotation.ActivityFragmentInject;
+import com.shenhua.commonlibs.base.BaseActivity;
+import com.shenhua.commonlibs.mvp.ApiCallback;
+import com.shenhua.commonlibs.mvp.BasePresenter;
+import com.shenhua.commonlibs.mvp.HttpManager;
+
+@ActivityFragmentInject(
+        contentViewId = R.layout.activity_main,
+        toolbarId = R.id.common_toolbar,
+        toolbarHomeAsUp = true,
+        toolbarTitle = R.string.app_name,
+        toolbarTitleId = R.id.tv_title
+)
+public class MainActivity extends BaseActivity {
+
+    private static final String TAG = "MainActivity";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        initFitsWindow();
-        setContentView(R.layout.activity_main);
+    protected void initView(BaseActivity baseActivity) {
+        setupToolbarTitle("1231321");
     }
 
-    private void initFitsWindow() {
-//        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            Window window = getWindow();
-//            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-//            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-//            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-//            window.setStatusBarColor(Color.TRANSPARENT);
-//        }
+    public void request(View view) {
+        BasePresenter pre = new BasePresenter();
+        pre.addSubscription(HttpManager.getInstance().createHtmlGetObservable(this, "http://www.baidu.com"), new ApiCallback<String>() {
+            @Override
+            public void onPreExecute() {
+                Log.d(TAG, "onPreExecute: ");
+            }
+
+            @Override
+            public void onSuccess(String str) {
+            }
+
+            @Override
+            public void onFailure(String msg) {
+
+            }
+
+            @Override
+            public void onFinish() {
+            }
+        });
+    }
+
+    public void read(View view) {
+        try {
+            String s = HttpManager.getInstance().getCache(this, "http://www.baidu.com");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

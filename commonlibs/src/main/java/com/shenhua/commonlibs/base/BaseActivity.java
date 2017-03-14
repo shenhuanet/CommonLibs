@@ -10,7 +10,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
@@ -29,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.shenhua.commonlibs.annotation.ActivityFragmentInject;
+import com.shenhua.commonlibs.utils.BusProvider;
 import com.shenhua.libs.common.R;
 
 /**
@@ -41,7 +41,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     private int mToolbarId;
     private boolean mToolbarHomeAsUp;
     private int mToolbarTitle;
+    private int mToolbarTitleId;
     private int mMenuId;
+    private boolean mUseBusEvent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,8 +54,10 @@ public abstract class BaseActivity extends AppCompatActivity {
             mContentViewId = annotation.contentViewId();
             mToolbarId = annotation.toolbarId();
             mToolbarTitle = annotation.toolbarTitle();
+            mToolbarTitleId = annotation.toolbarTitleId();
             mToolbarHomeAsUp = annotation.toolbarHomeAsUp();
             mMenuId = annotation.menuId();
+            mUseBusEvent = annotation.useBusEvent();
         } else {
             throw new RuntimeException("BaseActivity:Class must add annotations of ActivityFragmentInitParams.class");
         }
@@ -107,16 +111,34 @@ public abstract class BaseActivity extends AppCompatActivity {
                 }
             });
         }
+        if (mToolbarTitleId != -1) {
+            TextView textView = (TextView) findViewById(mToolbarTitleId);
+            if (textView != null && mToolbarTitle != -1) textView.setText(mToolbarTitle);
+        }
     }
 
-    public void setToolbarTitle(@IdRes int titleId) {
-        TextView textView = (TextView) findViewById(titleId);
-        if (textView != null) textView.setText(mToolbarTitle);
-    }
-
-    public void setToolbarTitle(String str, @IdRes int titleId) {
-        TextView textView = (TextView) findViewById(titleId);
+    public void setupToolbarTitle(String str) {
+        TextView textView = (TextView) findViewById(mToolbarTitleId);
         if (textView != null) textView.setText(str);
+    }
+
+    public void setupToolbarTitle(int resId) {
+        TextView textView = (TextView) findViewById(mToolbarTitleId);
+        if (textView != null) textView.setText(resId);
+    }
+
+    public void setupActionbarTitle(String str) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(str);
+        }
+    }
+
+    public void setupActionbarTitle(int resId) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(resId);
+        }
     }
 
     protected ActionBar getToolbar() {
@@ -155,17 +177,28 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            // do something for activity
-            finish();
+            if (Build.VERSION.SDK_INT > 21)
+                finishAfterTransition();
+            else
+                finish();
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (mUseBusEvent)
+            BusProvider.getInstance().register(this);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(netReceiver);
+        if (mUseBusEvent)
+            BusProvider.getInstance().unregister(this);
     }
 
     public class NetworkReceiver extends BroadcastReceiver {
