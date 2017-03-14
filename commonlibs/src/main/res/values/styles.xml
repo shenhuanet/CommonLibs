@@ -21,11 +21,32 @@
         <item name="android:minHeight">?attr/actionBarSize</item>
         <item name="android:paddingTop">@dimen/common_toolbar_padding_top</item>
         <item name="popupTheme">@style/OverFlowMenuTheme</item>
+        <item name="title">@null</item>
     </style>
 
     <style name="OverFlowMenuTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:textColorPrimary">@android:color/white</item>
         <item name="overlapAnchor">false</item>
     </style>
+
+    <!--    ++++++++++++++++++++++++++++++++++++++++++++++  light  +++++++++++++++++++++++++++ -->
+    <style name="CommonToolbar.Light">
+        <item name="theme">@style/LightToolbarTheme</item>
+        <item name="popupTheme">@style/AppTheme.PopupOverlay</item>
+    </style>
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="LightToolbarTheme" parent="@style/Widget.AppCompat.Light.ActionBar">
+        <item name="actionMenuTextColor">@android:color/white</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="actionOverflowButtonStyle">@style/ActionButton.Overflow</item>
+    </style>
+
+    <style name="ActionButton.Overflow" parent="android:style/Widget.Holo.Light.ActionButton.Overflow">
+        <item name="android:src">@drawable/ic_menu_over_flow</item>
+    </style>
+    <!--    ++++++++++++++++++++++++++++++++++++++++++++++  light  +++++++++++++++++++++++++++ -->
 
 </resources>
