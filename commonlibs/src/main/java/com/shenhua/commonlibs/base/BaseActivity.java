@@ -67,6 +67,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         netReceiver = new NetworkReceiver();
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(netReceiver, filter);
+        if (mUseBusEvent)
+            BusProvider.getInstance().register(this);
     }
 
     protected abstract void initView(BaseActivity baseActivity);
@@ -184,13 +186,6 @@ public abstract class BaseActivity extends AppCompatActivity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (mUseBusEvent)
-            BusProvider.getInstance().register(this);
     }
 
     @Override

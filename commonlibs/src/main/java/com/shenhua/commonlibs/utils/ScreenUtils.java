@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.util.DisplayMetrics;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -168,5 +170,14 @@ public class ScreenUtils {
         activity.getWindow().setFlags(keepScreenOn, keepScreenOn);
     }
 
-    // TODO: 2/10/2017 截屏
+    public static Bitmap captureView(View view) {
+        if (view == null) {
+            throw new NullPointerException("captureView is null.");
+        }
+        view.setDrawingCacheEnabled(true);
+        Bitmap bitmap = view.getDrawingCache();
+        bitmap = bitmap.createBitmap(bitmap);
+        view.setDrawingCacheEnabled(false);
+        return bitmap;
+    }
 }

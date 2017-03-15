@@ -142,6 +142,58 @@ public class CommonFileUtils {
     }
 
     /**
+     * 获取所有缓存大小
+     *
+     * @param context 上下文
+     * @return string
+     * @throws Exception
+     */
+    public static String getTotalCacheSize(Context context) throws Exception {
+        long cacheSize = getFolderSize(context.getCacheDir());
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            cacheSize += getFolderSize(context.getExternalCacheDir());
+        }
+        return ConvertUtils.toFileSizeString(cacheSize);
+    }
+
+    /**
+     * 清理所有缓存
+     *
+     * @param context 上下文
+     */
+    public void clearAllCache(Context context) {
+        recursionDeleteFile(context.getCacheDir());
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            recursionDeleteFile(context.getExternalCacheDir());
+        }
+    }
+
+    /**
+     * 获取文件大小
+     *
+     * @param file file
+     * @return size
+     * @throws Exception
+     */
+    private static long getFolderSize(File file) throws Exception {
+        long size = 0;
+        try {
+            File[] fileList = file.listFiles();
+            for (File aFileList : fileList) {
+                // 如果下面还有文件
+                if (aFileList.isDirectory()) {
+                    size = size + getFolderSize(aFileList);
+                } else {
+                    size = size + aFileList.length();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return size;
+    }
+
+    /**
      * 获取路径中的文件名
      *
      * @param pathAndName apks/app.apk
@@ -156,47 +208,6 @@ public class CommonFileUtils {
             return null;
         }
 
-    }
-
-    public class FileNameFilter implements FilenameFilter {
-
-        List<String> types;
-
-        /**
-         * 构造一个FileNameFilter对象，其指定文件类型为空。
-         */
-        protected FileNameFilter() {
-            types = new ArrayList<>();
-        }
-
-        /**
-         * 构造一个FileNameFilter对象，具有指定的文件类型。
-         *
-         * @param types ".apk"
-         */
-        protected FileNameFilter(List<String> types) {
-            super();
-            this.types = types;
-        }
-
-        @Override
-        public boolean accept(File dir, String filename) {
-            for (String type : types) {
-                if (filename.endsWith(type)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /**
-         * 添加指定类型的文件。
-         *
-         * @param type 将添加的文件类型，如".mp3"。
-         */
-        public void addType(String type) {
-            types.add(type);
-        }
     }
 
     /**
@@ -249,4 +260,45 @@ public class CommonFileUtils {
         return stringBuilder.toString();
     }
 
+
+    public class FileNameFilter implements FilenameFilter {
+
+        List<String> types;
+
+        /**
+         * 构造一个FileNameFilter对象，其指定文件类型为空。
+         */
+        protected FileNameFilter() {
+            types = new ArrayList<>();
+        }
+
+        /**
+         * 构造一个FileNameFilter对象，具有指定的文件类型。
+         *
+         * @param types ".apk"
+         */
+        protected FileNameFilter(List<String> types) {
+            super();
+            this.types = types;
+        }
+
+        @Override
+        public boolean accept(File dir, String filename) {
+            for (String type : types) {
+                if (filename.endsWith(type)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * 添加指定类型的文件。
+         *
+         * @param type 将添加的文件类型，如".mp3"。
+         */
+        public void addType(String type) {
+            types.add(type);
+        }
+    }
 }
