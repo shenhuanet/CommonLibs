@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">ShenhuaCommonLib</string>
+    <string name="commong_tips">提示</string>
+    <string name="commong_confirm">确定</string>
+    <string name="commong_cancel">取消</string>
 </resources>
