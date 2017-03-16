@@ -6,7 +6,9 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -34,6 +36,18 @@ public class ScreenUtils {
         int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
         if (resourceId > 0) result = context.getResources().getDimensionPixelSize(resourceId);
         return result;
+    }
+
+    /**
+     * 获取状态栏高度
+     *
+     * @param activity activity
+     * @return 高度 px
+     */
+    public static int getStatusBarHeight(Activity activity) {
+        Rect frame = new Rect();
+        activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+        return frame.top;
     }
 
     /**
@@ -170,14 +184,39 @@ public class ScreenUtils {
         activity.getWindow().setFlags(keepScreenOn, keepScreenOn);
     }
 
-    public static Bitmap captureView(View view) {
-        if (view == null) {
-            throw new NullPointerException("captureView is null.");
-        }
+    /**
+     * 对view进行截图
+     *
+     * @param view view
+     * @return bitmap
+     */
+    public Bitmap viewShot(View view) {
         view.setDrawingCacheEnabled(true);
-        Bitmap bitmap = view.getDrawingCache();
-        bitmap = bitmap.createBitmap(bitmap);
-        view.setDrawingCacheEnabled(false);
+        view.buildDrawingCache();// 启用DrawingCache并创建位图
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());// 创建一个DrawingCache的拷贝，因为DrawingCache得到的位图在禁用后会被回收
+        view.setDrawingCacheEnabled(false);// 禁用DrawingCache否则会影响性能
+        view.destroyDrawingCache();
         return bitmap;
+    }
+
+    /**
+     * 对屏幕进行截图，不包含状态栏
+     * tips: 当对整个view或layout截图时，由于控件与控件之间是透明的，而本实例图片保存类型为png
+     * 所以截取后图片出现黑色背景，解决的方法是对view或layout加上background.
+     *
+     * @param activity activity
+     * @return bitmap
+     */
+    public Bitmap screenShot(Activity activity) {
+        View view = activity.getWindow().getDecorView();
+        view.buildDrawingCache();
+        int h = getStatusBarHeight(activity);
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        int widths = display.getWidth();// 获取屏幕宽和高
+        int heights = display.getHeight();
+        view.setDrawingCacheEnabled(true);// 允许当前窗口保存缓存信息
+        Bitmap bmp = Bitmap.createBitmap(view.getDrawingCache(), 0, h, widths, heights - h);// 去掉状态栏
+        view.destroyDrawingCache();// 销毁缓存信息
+        return bmp;
     }
 }

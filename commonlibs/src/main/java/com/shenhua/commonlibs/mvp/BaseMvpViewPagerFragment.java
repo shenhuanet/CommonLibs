@@ -26,7 +26,6 @@ public abstract class BaseMvpViewPagerFragment<P extends BasePresenter<V>, V ext
 
     public abstract P createPresenter();
 
-
     @Override
     public Loader<P> onCreateLoader(int id, Bundle args) {
         return null;
@@ -48,13 +47,4 @@ public abstract class BaseMvpViewPagerFragment<P extends BasePresenter<V>, V ext
         super.onDestroyView();
     }
 
-    @Override
-    public void showProgress() {
-
-    }
-
-    @Override
-    public void hideProgress() {
-
-    }
 }

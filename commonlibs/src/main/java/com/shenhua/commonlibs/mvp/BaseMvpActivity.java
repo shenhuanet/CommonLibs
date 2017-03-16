@@ -47,18 +47,4 @@ public abstract class BaseMvpActivity<P extends BasePresenter<V>, V extends Base
         super.onDestroy();
     }
 
-    @Override
-    protected void initView(BaseActivity baseActivity) {
-
-    }
-
-    @Override
-    public void showProgress() {
-
-    }
-
-    @Override
-    public void hideProgress() {
-
-    }
 }

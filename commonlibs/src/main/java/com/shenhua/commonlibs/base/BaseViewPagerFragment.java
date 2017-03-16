@@ -2,7 +2,9 @@ package com.shenhua.commonlibs.base;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.shenhua.commonlibs.utils.LogUtils;
 
@@ -22,6 +24,11 @@ public class BaseViewPagerFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
         hasCreateView = false;
         isFragmentVisible = false;
+    }
+
+    @Override
+    public void onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState, View rootView) {
+
     }
 
     @Override
@@ -56,8 +63,4 @@ public class BaseViewPagerFragment extends BaseFragment {
         LogUtils.warn("onFragmentVisibleChange -> isVisible: " + isVisible);
     }
 
-    @Override
-    public void initView(View rootView) {
-
-    }
 }

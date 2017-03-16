@@ -57,6 +57,11 @@ public abstract class BaseFragment extends Fragment {
             mUseBusEvent = annotation.useBusEvent();
         }
         setHasOptionsMenu(hasOptionsMenu);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         netReceiver = new NetworkReceiver();
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         Activity activity = getActivity();
@@ -78,12 +83,18 @@ public abstract class BaseFragment extends Fragment {
                 mToolbarTitleId = annotation.toolbarTitleId();
                 mMenuId = annotation.menuId();
                 rootView = inflater.inflate(mContentViewId, container, false);
-                initView(rootView);
+                onCreateView(inflater, container, savedInstanceState, rootView);
                 initToolbar();
             } else {
                 Log.e(TAG, "onCreateView: BaseFragment:Class must add annotations of ActivityFragmentInitParams.class", new RuntimeException());
             }
         }
+        if (rootView == null) {
+            return super.onCreateView(inflater, container, savedInstanceState);
+        }
+        ViewGroup group = (ViewGroup) rootView.getParent();
+        if (group != null)
+            group.removeView(rootView);
         return rootView;
     }
 
@@ -92,7 +103,45 @@ public abstract class BaseFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
     }
 
-    public abstract void initView(View rootView);
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mUseBusEvent)
+            BusProvider.getInstance().unregister(this);
+        Activity activity = getActivity();
+        if (activity != null) {
+            activity.unregisterReceiver(netReceiver);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        if (mMenuId != -1)
+            inflater.inflate(mMenuId, menu);
+    }
+
+    public abstract void onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState, View rootView);
 
     private void initToolbar() {
         if (mToolbarId == -1) return;
@@ -155,28 +204,6 @@ public abstract class BaseFragment extends Fragment {
         Toast.makeText(getContext(), resId, Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        if (mMenuId != -1)
-            inflater.inflate(mMenuId, menu);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        ViewGroup parent = (ViewGroup) rootView.getParent();
-        if (null != parent) {
-            parent.removeView(rootView);
-        }
-        if (mUseBusEvent)
-            BusProvider.getInstance().unregister(this);
-        Activity activity = getActivity();
-        if (activity != null) {
-            activity.unregisterReceiver(netReceiver);
-        }
-    }
-
     public class NetworkReceiver extends BroadcastReceiver {
         public NetworkReceiver() {
 
@@ -185,11 +212,17 @@ public abstract class BaseFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-            if (networkInfo != null && networkInfo.isConnected()) {// 有网
-                onNetWorkIsOk();
-            } else {
-                onNetWorkIsError();
+            try {
+                NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+                if (networkInfo != null && networkInfo.isConnected()) {// 有网
+                    onNetWorkIsOk();
+                } else {
+                    onNetWorkIsError();
+                }
+            } catch (Exception e) {
+                if (e instanceof SecurityException) {
+                    Log.e(TAG, "NetworkReceiver: Make sure you has defined the android.permission.ACCESS_NETWORK_STATE and ACCESS_WIFI_STATE", e);
+                }
             }
         }
     }

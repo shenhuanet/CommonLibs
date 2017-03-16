@@ -45,7 +45,7 @@ import com.shenhua.libs.common.R;
 public abstract class BaseActivity extends AppCompatActivity {
 
     private static final String TAG = "BaseActivity";
-    NetworkReceiver netReceiver;
+    private NetworkReceiver netReceiver;
     private int mToolbarId;
     private boolean mToolbarHomeAsUp;
     private int mToolbarTitle;
@@ -67,9 +67,10 @@ public abstract class BaseActivity extends AppCompatActivity {
             mToolbarHomeAsUp = annotation.toolbarHomeAsUp();
             mMenuId = annotation.menuId();
             mUseBusEvent = annotation.useBusEvent();
-            setContentView(mContentViewId);
+            if (mContentViewId != -1)
+                setContentView(mContentViewId);
             initToolbar();
-            initView(this);
+            onCreate(this, savedInstanceState);
         } else {
             Log.e(TAG, "onCreate: BaseActivity:Class must add annotations of ActivityFragmentInitParams.class", new RuntimeException());
         }
@@ -80,7 +81,56 @@ public abstract class BaseActivity extends AppCompatActivity {
             BusProvider.getInstance().register(this);
     }
 
-    protected abstract void initView(BaseActivity baseActivity);
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(netReceiver);
+        if (mUseBusEvent)
+            BusProvider.getInstance().unregister(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (mMenuId != -1) {
+            getMenuInflater().inflate(mMenuId, menu);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            if (Build.VERSION.SDK_INT > 21)
+                finishAfterTransition();
+            else
+                finish();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    protected abstract void onCreate(BaseActivity baseActivity, Bundle savedInstanceState);
 
     /**
      * 调用 performRequestPermissions 方法来权限请求
@@ -114,7 +164,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     /**
      * 使状态栏透明
      */
-    private void initFitsWindow() {
+    public void initFitsWindow() {
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -181,19 +231,19 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    protected ActionBar getToolbar() {
+    public ActionBar getToolbar() {
         return getSupportActionBar();
     }
 
-    protected View getDecorView() {
+    public View getDecorView() {
         return getWindow().getDecorView();
     }
 
-    protected void showSnackBar(String msg) {
+    public void showSnackBar(String msg) {
         Snackbar.make(getDecorView(), msg, Snackbar.LENGTH_SHORT).show();
     }
 
-    protected void showSnackBar(@StringRes int id) {
+    public void showSnackBar(@StringRes int id) {
         Snackbar.make(getDecorView(), id, Snackbar.LENGTH_SHORT).show();
     }
 
@@ -205,35 +255,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         Toast.makeText(this, resId, Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        if (mMenuId != -1) {
-            getMenuInflater().inflate(mMenuId, menu);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (Build.VERSION.SDK_INT > 21)
-                finishAfterTransition();
-            else
-                finish();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(netReceiver);
-        if (mUseBusEvent)
-            BusProvider.getInstance().unregister(this);
-    }
-
     public class NetworkReceiver extends BroadcastReceiver {
         public NetworkReceiver() {
 
@@ -242,11 +263,17 @@ public abstract class BaseActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-            if (networkInfo != null && networkInfo.isConnected()) {// 有网
-                onNetWorkIsOk();
-            } else {
-                onNetWorkIsError();
+            try {
+                NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+                if (networkInfo != null && networkInfo.isConnected()) {// 有网
+                    onNetWorkIsOk();
+                } else {
+                    onNetWorkIsError();
+                }
+            } catch (Exception e) {
+                if (e instanceof SecurityException) {
+                    Log.e(TAG, "NetworkReceiver: Make sure you has defined the android.permission.ACCESS_NETWORK_STATE and ACCESS_WIFI_STATE", e);
+                }
             }
         }
     }

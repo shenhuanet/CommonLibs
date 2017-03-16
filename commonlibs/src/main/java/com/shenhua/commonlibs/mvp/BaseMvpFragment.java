@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.view.View;
 
 import com.shenhua.commonlibs.base.BaseFragment;
 
@@ -48,18 +47,4 @@ public abstract class BaseMvpFragment<P extends BasePresenter<V>, V extends Base
         super.onDestroyView();
     }
 
-    @Override
-    public void initView(View rootView) {
-
-    }
-
-    @Override
-    public void showProgress() {
-
-    }
-
-    @Override
-    public void hideProgress() {
-
-    }
 }
