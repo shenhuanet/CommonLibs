@@ -1,5 +1,6 @@
 package com.shenhua.shenhua_commonlib;
 
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
@@ -21,13 +22,13 @@ public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
 
     @Override
-    protected void initView(BaseActivity baseActivity) {
-        setupToolbarTitle("1231321");
+    protected void onCreate(BaseActivity baseActivity, Bundle savedInstanceState) {
+        setupToolbarTitle(R.string.app_name);
     }
 
     public void request(View view) {
         BasePresenter pre = new BasePresenter();
-        pre.addSubscription(HttpManager.getInstance().createHtmlGetObservable(this, "http://www.baidu.com"), new ApiCallback<String>() {
+        pre.addSubscription(HttpManager.getInstance().createHtmlGetObservable(this, "https://github.com/"), new ApiCallback<String>() {
             @Override
             public void onPreExecute() {
                 Log.d(TAG, "onPreExecute: ");
@@ -35,6 +36,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onSuccess(String str) {
+                Log.d(TAG, "onSuccess: " + str);
             }
 
             @Override
@@ -49,10 +51,5 @@ public class MainActivity extends BaseActivity {
     }
 
     public void read(View view) {
-        try {
-            String s = HttpManager.getInstance().getCache(this, "http://www.baidu.com");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

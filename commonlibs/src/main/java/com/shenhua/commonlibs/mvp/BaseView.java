@@ -9,4 +9,6 @@ public interface BaseView {
     void showProgress();
 
     void hideProgress();
+
+    void showToast(String msg);
 }

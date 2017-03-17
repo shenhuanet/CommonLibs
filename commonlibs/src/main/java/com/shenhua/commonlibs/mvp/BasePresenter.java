@@ -27,16 +27,16 @@ public class BasePresenter<V extends BaseView> {
     }
 
     /**
-     * 判断view是否为空
+     * To determine whether the view is empty
      *
-     * @return false不为空
+     * @return false is not null
      */
     public boolean isAttachView() {
         return mvpView != null;
     }
 
     /**
-     * 返回目标view
+     * return target view
      *
      * @return mvpView
      */
@@ -45,7 +45,7 @@ public class BasePresenter<V extends BaseView> {
     }
 
     /**
-     * 检查view和presenter是否连接
+     * Check whether the view and presenter are attached
      */
     public void checkViewAttach() {
         if (!isAttachView()) {
@@ -54,14 +54,20 @@ public class BasePresenter<V extends BaseView> {
     }
 
     /**
-     * 自定义异常
+     * Custom exception
      */
     public static class MvpViewNotAttachedException extends RuntimeException {
         MvpViewNotAttachedException() {
-            super("请求前请先调用 attachView(MvpView) 方法与View建立连接");
+            super("Please use the attachView (MvpView) method to establish a connection with View before calling");
         }
     }
 
+    /**
+     * Add http request subscription
+     *
+     * @param observable HttpManager.getInstance().createHtmlGetObservable()
+     * @param subscriber new ApiCallback()  run callback's methods on mainThread.
+     */
     @SuppressWarnings("unchecked")
     public void addSubscription(Observable observable, Subscriber subscriber) {
         if (mCompositeSubscription == null) {

@@ -62,11 +62,8 @@ public class HttpManager {
             retrofit = new Retrofit.Builder()
                     .baseUrl(baseUrl)
                     .client(getOkHttpClient(context))
-                    //增加返回值为String的支持
                     .addConverterFactory(ScalarsConverterFactory.create())
-                    //增加返回值为Gson的支持(以实体类返回)
                     .addConverterFactory(GsonConverterFactory.create())
-                    //增加返回值为Oservable<T>的支持
                     .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                     .build();
         }
@@ -74,12 +71,18 @@ public class HttpManager {
     }
 
     public OkHttpClient getOkHttpClient(Context context) {
+        return this.getOkHttpClient(context, true);
+    }
+
+    public OkHttpClient getOkHttpClient(Context context, boolean useLog) {
         if (okHttpClient == null) {
             synchronized (HttpManager.class) {
                 OkHttpClient.Builder builder = new OkHttpClient.Builder();
-                HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-                builder.addInterceptor(loggingInterceptor);
+                if (useLog) {
+                    HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+                    loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+                    builder.addInterceptor(loggingInterceptor);
+                }
                 File cacheDir = new File(context.getExternalCacheDir(), CACHE_DIR);
                 int cacheSize = 10 * 1024 * 1024; //10MB
                 Cache cache = new Cache(cacheDir, cacheSize);
@@ -122,22 +125,68 @@ public class HttpManager {
                         .build();
             }
         }
-
     }
 
-    public Observable createHtmlGetObservable(final Context context, final String url) {
+    /**
+     * create a Html Get Observable
+     *
+     * @param context context
+     * @param url     url
+     * @return Observable
+     */
+    public Observable createHtmlGetObservable(Context context, String url) {
+        return this.createHtmlGetObservable(context, url, null, true);
+    }
+
+    /**
+     * Create a Html Get Observable
+     *
+     * @param context context
+     * @param url     url
+     * @param charset charset
+     * @return Observable
+     */
+    public Observable createHtmlGetObservable(Context context, String url, String charset) {
+        return this.createHtmlGetObservable(context, url, charset, true);
+    }
+
+    /**
+     * Create a Html Get Observable
+     *
+     * @param context context
+     * @param url     url
+     * @param useLog  whether to print the request log
+     * @return Observable
+     */
+    public Observable createHtmlGetObservable(Context context, String url, boolean useLog) {
+        return this.createHtmlGetObservable(context, url, null, useLog);
+    }
+
+    /**
+     * create a Html Get Observable
+     *
+     * @param context context
+     * @param url     url
+     * @param charset charset
+     * @param useLog  whether to print the request log
+     * @return Observable
+     */
+    public Observable createHtmlGetObservable(final Context context, final String url, final String charset, final boolean useLog) {
         return Observable.create(new Observable.OnSubscribe<String>() {
+
             @Override
             public void call(Subscriber<? super String> subscriber) {
                 subscriber.onStart();
                 Request request = new Request.Builder().url(url).build();
-                Call call = getOkHttpClient(context).newCall(request);
+                Call call = getOkHttpClient(context, useLog).newCall(request);
                 try {
                     Response response = call.execute();
                     int statusCode = response.code();
                     switch (statusCode) {
                         case HTTP_STATUS_OK:
-                            subscriber.onNext(response.body().string());
+                            subscriber.onNext(charset == null
+                                    ? response.body().string()
+                                    : new String(response.body().bytes(), charset));
                             break;
                         case HTTP_STATUS_REDIRECT:// 重定向
                         case HTTP_STATUS_FORBIDDEN:
@@ -146,7 +195,9 @@ public class HttpManager {
                             subscriber.onError(new HttpRequestException(statusCode, "error"));
                             break;
                         default:
-                            subscriber.onNext(response.body().string());
+                            subscriber.onNext(charset == null
+                                    ? response.body().string()
+                                    : new String(response.body().bytes(), charset));
                             break;
                     }
                     subscriber.onCompleted();
@@ -158,6 +209,11 @@ public class HttpManager {
         });
     }
 
+    /**
+     * Send http asynchronous request
+     *
+     * @param runnable runnable in thread
+     */
     public void sendRequest(Runnable runnable) {
         if (runnable != null)
             executorService.submit(runnable);
