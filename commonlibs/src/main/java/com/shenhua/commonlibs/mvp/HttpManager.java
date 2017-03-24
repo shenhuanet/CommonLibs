@@ -239,12 +239,16 @@ public class HttpManager {
     }
 
     public String getCache(Context context, String url) throws Exception {
+        return this.getCache(context, url, "utf-8");
+    }
+
+    public String getCache(Context context, String url, String charset) throws Exception {
         Request request = new Request.Builder()
                 .cacheControl(new CacheControl.Builder().onlyIfCached().build()).url(url).build();
         Call call = getOkHttpClient(context).newCall(request);
         Response response = call.execute();
         if (response.code() == HTTP_STATUS_UNAVAILABLE)
             return null;
-        return response.body().toString();
+        return new String(response.body().bytes(), charset);
     }
 }

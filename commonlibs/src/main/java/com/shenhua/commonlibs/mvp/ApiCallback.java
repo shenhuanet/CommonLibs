@@ -41,13 +41,16 @@ public abstract class ApiCallback<M> extends Subscriber<M> {
         if (e instanceof HttpRequestException) {
             HttpRequestException httpRequestException = (HttpRequestException) e;
             onFailure(httpRequestException.getMsg());
-        }
-        if (e instanceof HttpException) {
+        } else if (e instanceof HttpException) {
             if (e.getMessage().contains("Unable to resolve")) {
                 msg = "网络未连接";
                 onFailure(msg);
             }
         }
+		// ProtocolException 21 超过20个重定向
+		else {
+			onFailure("error");
+		}
         onFinish();
     }
 }
