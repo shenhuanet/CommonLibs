@@ -90,6 +90,15 @@ public abstract class BaseListAdapter<T> extends BaseAdapter {
             }
         }
 
+        public void setOnListItemClickListener(final OnListItemClickListener listener) {
+            convertView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onItemClick(v);
+                }
+            });
+        }
+
         /**
          * 可通过Id获取item里面的view
          *
@@ -163,17 +172,16 @@ public abstract class BaseListAdapter<T> extends BaseAdapter {
             return this;
         }
 
-        View getConvertView() {
+        public View getConvertView() {
             return convertView;
         }
 
-        /**
-         * 获取当前item的位置
-         *
-         * @return position
-         */
         public int getPosition() {
             return mPosition;
+        }
+
+        public interface OnListItemClickListener {
+            void onItemClick(View view);
         }
     }
 
