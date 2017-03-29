@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.shenhua.commonlibs.handler.BaseThreadHandler;
-import com.shenhua.commonlibs.handler.CommonR;
+import com.shenhua.commonlibs.handler.CommonRunnable;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -60,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        BaseThreadHandler.getInstance().send(new CommonR<String>() {
+        BaseThreadHandler.getInstance().sendRunnable(new CommonRunnable<String>() {
             @Override
-            public String doInBackground() {
+            public String doChildThread() {
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void doInUiThread(String s) {
+            public void doUiThread(String s) {
                 Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
             }
         });

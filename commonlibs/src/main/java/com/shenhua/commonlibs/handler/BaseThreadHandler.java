@@ -34,9 +34,6 @@ public class BaseThreadHandler {
             if (sInstance == null) {
                 sInstance = new BaseThreadHandler();
             }
-            if (executorService == null) {
-                executorService = Executors.newSingleThreadExecutor();
-            }
             return sInstance;
         }
     }
@@ -62,6 +59,11 @@ public class BaseThreadHandler {
      * @return this
      */
     public <T> BaseThreadHandler sendRunnable(Callable<T> call, OnUiThread<T> callback) {
+        synchronized (executorService) {
+            if (executorService == null) {
+                executorService = Executors.newSingleThreadExecutor();
+            }
+        }
         if (call != null) {
             mCallback = new Callback<>(callback);
             try {
@@ -94,6 +96,11 @@ public class BaseThreadHandler {
      * @return this
      */
     public <T> BaseThreadHandler sendRunnable(Runnable runnable, OnUiThread<T> callback) {
+        synchronized (executorService) {
+            if (executorService == null) {
+                executorService = Executors.newSingleThreadExecutor();
+            }
+        }
         if (runnable != null) {
             mCallback = new Callback<>(callback);
             try {
@@ -127,53 +134,29 @@ public class BaseThreadHandler {
         this.sendRunnable(t, 0, TimeUnit.MILLISECONDS);
     }
 
-    public <T> void send(final CommonR<T> commonR) {
+    /**
+     * 非阻塞式Runnable，用于子线程和主线程间，通用型
+     *
+     * @param ccr      CommonRunnable
+     * @param time     超时时间
+     * @param timeUnit 超时单位
+     * @param <T>      t
+     */
+    public <T> void sendRunnable(final CommonRunnable<T> ccr, long time, TimeUnit timeUnit) {
         Observable.OnSubscribe<T> os = new Observable.OnSubscribe<T>() {
             @Override
             public void call(Subscriber<? super T> subscriber) {
-                T result = commonR.doInBackground();
+                T result = ccr.doChildThread();
                 subscriber.onNext(result);
                 subscriber.onCompleted();
             }
         };
         Observable.create(os).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .delay(time, timeUnit)
                 .subscribe(new Action1<T>() {
                     @Override
                     public void call(T t) {
-                        commonR.doInUiThread(t);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        throwable.printStackTrace();
-                    }
-                });
-    }
-
-
-    /**
-     * 非阻塞式Runnable，用于子线程和主线程间，通用型
-     *
-     * @param t        t
-     * @param time     超时时间
-     * @param timeUnit 超时单位
-     * @param <T>      t
-     */
-    public <T> void sendRunnable(CommonRunnable<T> t, long time, TimeUnit timeUnit) {
-        CommonSubscribe<CommonRunnable<T>> cs = new CommonSubscribe<CommonRunnable<T>>(t) {
-            @Override
-            public void call(Subscriber<? super CommonRunnable<T>> subscriber) {
-                getC().doChildThread();
-                subscriber.onNext(getC());
-                subscriber.onCompleted();
-            }
-        };
-        Observable.create(cs).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .delay(time, timeUnit)
-                .subscribe(new Action1<CommonRunnable<T>>() {
-                    @Override
-                    public void call(CommonRunnable<T> tCommonTask) {
-                        tCommonTask.doUiThread(tCommonTask.getT());
+                        ccr.doUiThread(t);
                     }
                 }, new Action1<Throwable>() {
                     @Override
