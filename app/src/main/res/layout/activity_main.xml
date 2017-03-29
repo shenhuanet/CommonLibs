@@ -16,6 +16,7 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:onClick="request"
+        android:padding="20dp"
         android:text="请求" />
 
     <TextView
@@ -24,8 +25,6 @@
         android:layout_margin="30dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
-        android:onClick="read"
         android:text="读取缓存" />
-
 
 </LinearLayout>

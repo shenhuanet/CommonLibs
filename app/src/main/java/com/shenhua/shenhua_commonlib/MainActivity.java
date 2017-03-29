@@ -1,55 +1,70 @@
 package com.shenhua.shenhua_commonlib;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
-import com.shenhua.commonlibs.annotation.ActivityFragmentInject;
-import com.shenhua.commonlibs.base.BaseActivity;
-import com.shenhua.commonlibs.mvp.ApiCallback;
-import com.shenhua.commonlibs.mvp.BasePresenter;
-import com.shenhua.commonlibs.mvp.HttpManager;
+import com.shenhua.commonlibs.handler.BaseThreadHandler;
+import com.shenhua.commonlibs.handler.CommonUiRunnable;
 
-@ActivityFragmentInject(
-        contentViewId = R.layout.activity_main,
-        toolbarId = R.id.common_toolbar,
-        toolbarHomeAsUp = true,
-        toolbarTitle = R.string.app_name,
-        toolbarTitleId = R.id.tv_title
-)
-public class MainActivity extends BaseActivity {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
     @Override
-    protected void onCreate(BaseActivity baseActivity, Bundle savedInstanceState) {
-        setupToolbarTitle(R.string.app_name);
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
     }
 
     public void request(View view) {
-        BasePresenter pre = new BasePresenter();
-        pre.addSubscription(HttpManager.getInstance().createHtmlGetObservable(this, "https://github.com/"), new ApiCallback<String>() {
-            @Override
-            public void onPreExecute() {
-                Log.d(TAG, "onPreExecute: ");
-            }
+//        BaseThreadHandler.getInstance().sendRunnable(new Callable<String>() {
+//            @Override
+//            public String call() throws Exception {
+//                Log.d(TAG, "run: 1");
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                Log.d(TAG, "run: 2");
+//                return "123456";
+//            }
+//        }, new BaseThreadHandler.OnUiThread<String>() {
+//            @Override
+//            public void onSuccess(String s) {
+//                super.onSuccess(s);
+//                Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
-            @Override
-            public void onSuccess(String str) {
-                Log.d(TAG, "onSuccess: " + str);
-            }
+//        BaseThreadHandler.getInstance().sendRunnable(new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.d(TAG, "run: 1");
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                Log.d(TAG, "run: 2");
+//            }
+//        }, new BaseThreadHandler.OnUiThread<Object>() {
+//            @Override
+//            public void onSuccess(Object o) {
+//                super.onSuccess(o);
+//                Log.d(TAG, "onSuccess: done2");
+//                Toast.makeText(MainActivity.this, "OK", Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
+        BaseThreadHandler.getInstance().sendRunnable(new CommonUiRunnable<String>("") {
             @Override
-            public void onFailure(String msg) {
-
-            }
-
-            @Override
-            public void onFinish() {
+            public void doUIThread() {
+                Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    public void read(View view) {
     }
 }
