@@ -12,9 +12,9 @@ public abstract class CommonRunnable<T> {
         this.t = t;
     }
 
-    public abstract void doChildThread();
+    public abstract T doChildThread();
 
-    public abstract void doUiThread();
+    public abstract void doUiThread(T t);
 
     public T getT() {
         return t;

@@ -127,6 +127,30 @@ public class BaseThreadHandler {
         this.sendRunnable(t, 0, TimeUnit.MILLISECONDS);
     }
 
+    public <T> void send(final CommonR<T> commonR) {
+        Observable.OnSubscribe<T> os = new Observable.OnSubscribe<T>() {
+            @Override
+            public void call(Subscriber<? super T> subscriber) {
+                T result = commonR.doInBackground();
+                subscriber.onNext(result);
+                subscriber.onCompleted();
+            }
+        };
+        Observable.create(os).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<T>() {
+                    @Override
+                    public void call(T t) {
+                        commonR.doInUiThread(t);
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                });
+    }
+
+
     /**
      * 非阻塞式Runnable，用于子线程和主线程间，通用型
      *
@@ -149,7 +173,7 @@ public class BaseThreadHandler {
                 .subscribe(new Action1<CommonRunnable<T>>() {
                     @Override
                     public void call(CommonRunnable<T> tCommonTask) {
-                        tCommonTask.doUiThread();
+                        tCommonTask.doUiThread(tCommonTask.getT());
                     }
                 }, new Action1<Throwable>() {
                     @Override
