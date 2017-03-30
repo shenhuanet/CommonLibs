@@ -8,7 +8,7 @@ public abstract class CommonChildRunnable<T> {
 
     private T t;
 
-    private CommonChildRunnable(T t) {
+    public CommonChildRunnable(T t) {
         this.t = t;
     }
 

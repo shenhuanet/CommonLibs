@@ -22,6 +22,7 @@ import rx.schedulers.Schedulers;
  */
 public class BaseThreadHandler {
 
+    private static final String TAG = "BaseThreadHandler";
     private static BaseThreadHandler sInstance = null;
     private static ExecutorService executorService = null;
     private static final int SUCCESS = 1;
@@ -38,31 +39,16 @@ public class BaseThreadHandler {
         }
     }
 
-    public static class OnUiThread<T> {
-
-        public void onSuccess(T t) {
-        }
-
-        public void onFailed(String msg) {
-        }
-
-        public void onCanceled() {
-        }
-    }
-
     /**
      * 阻塞式Callable
      *
-     * @param call     call
-     * @param callback callback
-     * @param <T>      t
-     * @return this
+     * @param call     Callable call
+     * @param callback OnUiThread callback
+     * @param <T>      数据类型
      */
-    public <T> BaseThreadHandler sendRunnable(Callable<T> call, OnUiThread<T> callback) {
-        synchronized (executorService) {
-            if (executorService == null) {
-                executorService = Executors.newSingleThreadExecutor();
-            }
+    public <T> void sendRunnable(Callable<T> call, OnUiThread<T> callback) {
+        if (executorService == null) {
+            executorService = Executors.newSingleThreadExecutor();
         }
         if (call != null) {
             mCallback = new Callback<>(callback);
@@ -84,22 +70,18 @@ public class BaseThreadHandler {
                 }
             }
         }
-        return this;
     }
 
     /**
      * 阻塞式Runnable
      *
      * @param runnable runnable
-     * @param callback callback
-     * @param <T>      t
-     * @return this
+     * @param callback OnUiThread callback
+     * @param <T>      数据类型
      */
-    public <T> BaseThreadHandler sendRunnable(Runnable runnable, OnUiThread<T> callback) {
-        synchronized (executorService) {
-            if (executorService == null) {
-                executorService = Executors.newSingleThreadExecutor();
-            }
+    public <T> void sendRunnable(Runnable runnable, OnUiThread<T> callback) {
+        if (executorService == null) {
+            executorService = Executors.newSingleThreadExecutor();
         }
         if (runnable != null) {
             mCallback = new Callback<>(callback);
@@ -121,14 +103,13 @@ public class BaseThreadHandler {
                 }
             }
         }
-        return this;
     }
 
     /**
      * 非阻塞式Runnable，用于子线程和主线程间，通用型
      *
-     * @param t   t
-     * @param <T> t
+     * @param t   CommonRunnable
+     * @param <T> 数据类型
      */
     public <T> void sendRunnable(CommonRunnable<T> t) {
         this.sendRunnable(t, 0, TimeUnit.MILLISECONDS);
@@ -138,9 +119,9 @@ public class BaseThreadHandler {
      * 非阻塞式Runnable，用于子线程和主线程间，通用型
      *
      * @param ccr      CommonRunnable
-     * @param time     超时时间
-     * @param timeUnit 超时单位
-     * @param <T>      t
+     * @param time     延迟一段时间再执行
+     * @param timeUnit 延时单位
+     * @param <T>      数据类型
      */
     public <T> void sendRunnable(final CommonRunnable<T> ccr, long time, TimeUnit timeUnit) {
         Observable.OnSubscribe<T> os = new Observable.OnSubscribe<T>() {
@@ -151,8 +132,8 @@ public class BaseThreadHandler {
                 subscriber.onCompleted();
             }
         };
-        Observable.create(os).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .delay(time, timeUnit)
+        Observable.create(os).delay(time, timeUnit).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<T>() {
                     @Override
                     public void call(T t) {
@@ -169,8 +150,8 @@ public class BaseThreadHandler {
     /**
      * 非阻塞式Runnable，用于子线程
      *
-     * @param t   t
-     * @param <T> t
+     * @param t   CommonChildRunnable
+     * @param <T> 数据类型
      */
     public <T> void sendRunnable(CommonChildRunnable<T> t) {
         this.sendRunnable(t, 0, TimeUnit.MILLISECONDS);
@@ -179,10 +160,10 @@ public class BaseThreadHandler {
     /**
      * 非阻塞式Runnable，用于子线程
      *
-     * @param t        t
-     * @param time     超时时间
-     * @param timeUnit 超时单位
-     * @param <T>      t
+     * @param t        CommonChildRunnable
+     * @param time     延迟一段时间再执行
+     * @param timeUnit 延时单位
+     * @param <T>      数据类型
      */
     public <T> void sendRunnable(final CommonChildRunnable<T> t, long time, TimeUnit timeUnit) {
         Observable.just(t).delay(time, timeUnit).observeOn(Schedulers.io())
@@ -202,8 +183,8 @@ public class BaseThreadHandler {
     /**
      * 非阻塞式Runnable，用于主线程
      *
-     * @param t   t
-     * @param <T> t
+     * @param t   CommonUiRunnable
+     * @param <T> 数据类型
      */
     public <T> void sendRunnable(CommonUiRunnable<T> t) {
         this.sendRunnable(t, 0, TimeUnit.MILLISECONDS);
@@ -212,10 +193,10 @@ public class BaseThreadHandler {
     /**
      * 非阻塞式Runnable，用于主线程
      *
-     * @param t        t
-     * @param time     超时时间
-     * @param timeUnit 超时单位
-     * @param <T>      t
+     * @param t        CommonUiRunnable
+     * @param time     延迟一段时间再执行
+     * @param timeUnit 延时单位
+     * @param <T>      数据类型
      */
     public <T> void sendRunnable(final CommonUiRunnable<T> t, long time, TimeUnit timeUnit) {
         Observable.just(t).delay(time, timeUnit).observeOn(AndroidSchedulers.mainThread())
@@ -230,6 +211,18 @@ public class BaseThreadHandler {
                         throwable.printStackTrace();
                     }
                 });
+    }
+
+    public static class OnUiThread<T> {
+
+        public void onSuccess(T t) {
+        }
+
+        public void onFailed(String msg) {
+        }
+
+        public void onCanceled() {
+        }
     }
 
     private static class Callback<T> extends Handler {
