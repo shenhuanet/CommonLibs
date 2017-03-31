@@ -29,4 +29,8 @@
         android:onClick="read"
         android:text="读取缓存" />
 
+    <com.shenhua.commonlibs.widget.ClearEditText
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
 </LinearLayout>

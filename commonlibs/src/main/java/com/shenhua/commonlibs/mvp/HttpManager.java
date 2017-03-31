@@ -20,6 +20,7 @@ import okhttp3.Call;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -52,8 +53,6 @@ public class HttpManager {
         if (instance == null) {
             instance = new HttpManager();
         }
-        if (executorService == null)
-            executorService = Executors.newSingleThreadExecutor();
         return instance;
     }
 
@@ -70,11 +69,27 @@ public class HttpManager {
         return retrofit;
     }
 
-    public OkHttpClient getOkHttpClient(Context context) {
-        return this.getOkHttpClient(context, true);
+    /**
+     * Send http asynchronous request
+     *
+     * @param runnable runnable in thread
+     */
+    public void sendRequest(Runnable runnable) {
+        if (executorService == null)
+            executorService = Executors.newSingleThreadExecutor();
+        if (runnable != null)
+            executorService.submit(runnable);
     }
 
-    public OkHttpClient getOkHttpClient(Context context, boolean useLog) {
+    public OkHttpClient getOkHttpClient(Context context) {
+        return this.getOkHttpClient(context, true, true);
+    }
+
+    public OkHttpClient getOkHttpClient(Context context, boolean followRedirects) {
+        return this.getOkHttpClient(context, true, followRedirects);
+    }
+
+    public OkHttpClient getOkHttpClient(Context context, boolean useLog, boolean followRedirects) {
         if (okHttpClient == null) {
             synchronized (HttpManager.class) {
                 OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -86,6 +101,7 @@ public class HttpManager {
                 File cacheDir = new File(context.getExternalCacheDir(), CACHE_DIR);
                 int cacheSize = 10 * 1024 * 1024; //10MB
                 Cache cache = new Cache(cacheDir, cacheSize);
+                builder.followRedirects(followRedirects);
                 builder.cache(cache);
                 builder.addInterceptor(new RewriteCacheControlInterceptor(context));
                 okHttpClient = builder.build();
@@ -162,6 +178,10 @@ public class HttpManager {
         return this.createHtmlGetObservable(context, url, null, useLog);
     }
 
+    public Observable createHtmlGetObservable(final Context context, final String url, final String charset, final boolean useLog) {
+        return createHtmlGetObservable(context, url, charset, useLog, true);
+    }
+
     /**
      * create a Html Get Observable
      *
@@ -171,14 +191,14 @@ public class HttpManager {
      * @param useLog  whether to print the request log
      * @return Observable
      */
-    public Observable createHtmlGetObservable(final Context context, final String url, final String charset, final boolean useLog) {
+    public Observable createHtmlGetObservable(final Context context, final String url, final String charset, final boolean useLog, final boolean followRedirects) {
         return Observable.create(new Observable.OnSubscribe<String>() {
 
             @Override
             public void call(Subscriber<? super String> subscriber) {
                 subscriber.onStart();
                 Request request = new Request.Builder().url(url).build();
-                Call call = getOkHttpClient(context, useLog).newCall(request);
+                Call call = getOkHttpClient(context, useLog, followRedirects).newCall(request);
                 try {
                     Response response = call.execute();
                     int statusCode = response.code();
@@ -209,14 +229,37 @@ public class HttpManager {
         });
     }
 
-    /**
-     * Send http asynchronous request
-     *
-     * @param runnable runnable in thread
-     */
-    public void sendRequest(Runnable runnable) {
-        if (runnable != null)
-            executorService.submit(runnable);
+    public Observable createHtmlPostObservable(final Context context, final String url, final RequestBody formBody) {
+        return createHtmlPostObservable(context, url, "utf-8", formBody);
+    }
+
+    public Observable createHtmlPostObservable(final Context context, final String url, final String charset, final RequestBody formBody) {
+        return createHtmlPostObservable(context, url, charset, formBody, false);
+    }
+
+    public Observable createHtmlPostObservable(final Context context, final String url, final String charset, final RequestBody formBody, final boolean useLog) {
+        return createHtmlPostObservable(context, url, charset, formBody, useLog, true);
+    }
+
+    public Observable createHtmlPostObservable(final Context context, final String url, final String charset, final RequestBody formBody, final boolean useLog, final boolean followRedirects) {
+        return Observable.create(new Observable.OnSubscribe<String>() {
+
+            @Override
+            public void call(Subscriber<? super String> subscriber) {
+                subscriber.onStart();
+                Request request = new Request.Builder().url(url).post(formBody).build();
+                Call call = getOkHttpClient(context, useLog, followRedirects).newCall(request);
+                try {
+                    Response response = call.execute();
+                    String result = new String(response.body().bytes(), charset);
+                    subscriber.onNext(result);
+                    subscriber.onCompleted();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    subscriber.onError(e);
+                }
+            }
+        });
     }
 
     public Connection getConnection(String host, String param, Connection.Method method) {
@@ -233,6 +276,57 @@ public class HttpManager {
         try {
             return connection.execute();
         } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Response doResponseGet(Context context, String url) {
+        return doResponseGet(context, url, true);
+    }
+
+    public Response doResponseGet(Context context, String url, boolean followRedirects) {
+        Request request = new Request.Builder().url(url).get().build();
+        Call call = getOkHttpClient(context, followRedirects).newCall(request);
+        try {
+            return call.execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String doGet(Context context, String url) {
+        return doGet(context, url, "utf-8", true);
+    }
+
+    public String doGet(Context context, String url, boolean followRedirects) {
+        return doGet(context, url, "utf-8", followRedirects);
+    }
+
+    public String doGet(Context context, String url, String charset, boolean followRedirects) {
+        Request request = new Request.Builder().url(url).get().build();
+        Call call = getOkHttpClient(context, followRedirects).newCall(request);
+        try {
+            Response response = call.execute();
+            return new String(response.body().bytes(), charset);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String doPost(Context context, String url, RequestBody formBody) {
+        return doPost(context, url, formBody, "utf-8", true);
+    }
+
+    public String doPost(Context context, String url, RequestBody formBody, String charset, boolean followRedirects) {
+        Request request = new Request.Builder().url(url).post(formBody).build();
+        Call call = getOkHttpClient(context, followRedirects).newCall(request);
+        try {
+            Response response = call.execute();
+            return new String(response.body().bytes(), charset);
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
