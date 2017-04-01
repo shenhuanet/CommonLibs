@@ -10,6 +10,9 @@ import org.jsoup.Jsoup;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +20,9 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Call;
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -104,6 +110,41 @@ public class HttpManager {
                 builder.followRedirects(followRedirects);
                 builder.cache(cache);
                 builder.addInterceptor(new RewriteCacheControlInterceptor(context));
+                okHttpClient = builder.build();
+            }
+        }
+        return okHttpClient;
+    }
+
+    public OkHttpClient getOkHttpClientSaveCookies(Context context, boolean useLog) {
+        if (okHttpClient == null) {
+            synchronized (HttpManager.class) {
+                OkHttpClient.Builder builder = new OkHttpClient.Builder();
+                if (useLog) {
+                    HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+                    loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+                    builder.addInterceptor(loggingInterceptor);
+                }
+                File cacheDir = new File(context.getExternalCacheDir(), CACHE_DIR);
+                int cacheSize = 10 * 1024 * 1024; //10MB
+                Cache cache = new Cache(cacheDir, cacheSize);
+                builder.cache(cache);
+                builder.addInterceptor(new RewriteCacheControlInterceptor(context));
+                builder.cookieJar(new CookieJar() {
+
+                    private final HashMap<HttpUrl, List<Cookie>> cookieStore = new HashMap<>();
+
+                    @Override
+                    public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+                        cookieStore.put(url, cookies);
+                    }
+
+                    @Override
+                    public List<Cookie> loadForRequest(HttpUrl url) {
+                        List<Cookie> cookies = cookieStore.get(url);
+                        return cookies != null ? cookies : new ArrayList<Cookie>();
+                    }
+                });
                 okHttpClient = builder.build();
             }
         }

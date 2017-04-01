@@ -22,6 +22,4 @@ public class MainActivity extends AppCompatActivity {
     public void request(View view) {
     }
 
-    public void read(View view) {
-    }
 }
