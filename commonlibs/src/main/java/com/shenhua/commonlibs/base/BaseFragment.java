@@ -82,9 +82,11 @@ public abstract class BaseFragment extends Fragment {
                 mToolbarTitle = annotation.toolbarTitle();
                 mToolbarTitleId = annotation.toolbarTitleId();
                 mMenuId = annotation.menuId();
-                rootView = inflater.inflate(mContentViewId, container, false);
-                onCreateView(inflater, container, savedInstanceState, rootView);
-                initToolbar();
+                if (mContentViewId != -1) {
+                    rootView = inflater.inflate(mContentViewId, container, false);
+                    onCreateView(inflater, container, savedInstanceState, rootView);
+                    initToolbar();
+                }
             } else {
                 Log.e(TAG, "onCreateView: BaseFragment:Class must add annotations of ActivityFragmentInitParams.class", new RuntimeException());
             }
@@ -150,7 +152,7 @@ public abstract class BaseFragment extends Fragment {
         if (activity != null) {
             ((AppCompatActivity) activity).setSupportActionBar(toolbar);
             ActionBar ab = getToolbar();
-            assert ab != null;
+            if (ab == null) return;
             ab.setTitle("");
         }
         if (mToolbarTitleId != -1) {

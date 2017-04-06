@@ -67,8 +67,9 @@ public abstract class BaseActivity extends AppCompatActivity {
             mToolbarHomeAsUp = annotation.toolbarHomeAsUp();
             mMenuId = annotation.menuId();
             mUseBusEvent = annotation.useBusEvent();
-            if (mContentViewId != -1)
+            if (mContentViewId != -1) {
                 setContentView(mContentViewId);
+            }
             initToolbar();
             onCreate(this, savedInstanceState);
         } else {
@@ -179,13 +180,13 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    private void initToolbar() {
+    public void initToolbar() {
         if (mToolbarId == -1) return;// 无toolbar
         Toolbar toolbar = (Toolbar) findViewById(mToolbarId);
-        assert toolbar != null;
+        if (toolbar == null) return;
         setSupportActionBar(toolbar);
         ActionBar ab = getToolbar();
-        assert ab != null;
+        if (ab == null) return;
         ab.setTitle("");
         if (mToolbarHomeAsUp) {
             ab.setHomeAsUpIndicator(R.drawable.ic_back_white);
