@@ -190,7 +190,7 @@ public class ScreenUtils {
      * @param view view
      * @return bitmap
      */
-    public Bitmap viewShot(View view) {
+    public static Bitmap viewShot(View view) {
         view.setDrawingCacheEnabled(true);
         view.buildDrawingCache();// 启用DrawingCache并创建位图
         Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());// 创建一个DrawingCache的拷贝，因为DrawingCache得到的位图在禁用后会被回收
@@ -207,7 +207,7 @@ public class ScreenUtils {
      * @param activity activity
      * @return bitmap
      */
-    public Bitmap screenShot(Activity activity) {
+    public static Bitmap screenShot(Activity activity) {
         View view = activity.getWindow().getDecorView();
         view.buildDrawingCache();
         int h = getStatusBarHeight(activity);
