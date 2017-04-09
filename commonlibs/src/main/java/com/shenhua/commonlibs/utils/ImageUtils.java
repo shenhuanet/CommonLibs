@@ -9,6 +9,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.v8.renderscript.Allocation;
+import android.support.v8.renderscript.Element;
+import android.support.v8.renderscript.RenderScript;
+import android.support.v8.renderscript.ScriptIntrinsicBlur;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -68,4 +72,36 @@ public class ImageUtils {
         return file.getAbsolutePath();
     }
 
+
+    /**
+     * 高斯模糊图片
+     *
+     * @param context context
+     * @param bitmap  bitmap对象
+     * @param radius  the radius of the blur: 0 < radius <= 25
+     * @return bitmap
+     */
+    public Bitmap blurBitmap(Context context, Bitmap bitmap, float radius) {
+        //Let's create an empty bitmap with the same size of the bitmap we want to blur
+        Bitmap outBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        //Instantiate a new Renderscript
+        RenderScript rs = RenderScript.create(context);
+        //Create an Intrinsic Blur Script using the Renderscript
+        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+        //Create the Allocations (in/out) with the Renderscript and the in/out bitmaps
+        Allocation allIn = Allocation.createFromBitmap(rs, bitmap);
+        Allocation allOut = Allocation.createFromBitmap(rs, outBitmap);
+        //Set the radius of the blur: 0 < radius <= 25
+        blurScript.setRadius(radius);
+        //Perform the Renderscript
+        blurScript.setInput(allIn);
+        blurScript.forEach(allOut);
+        //Copy the final bitmap created by the out Allocation to the outBitmap
+        allOut.copyTo(outBitmap);
+        //recycle the original bitmap
+        bitmap.recycle();
+        //After finishing everything, we destroy the Renderscript.
+        rs.destroy();
+        return outBitmap;
+    }
 }
