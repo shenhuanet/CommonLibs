@@ -37,6 +37,7 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<BaseRe
     public BaseRecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         final BaseRecyclerViewHolder holder = new BaseRecyclerViewHolder(mContext, mInflater.inflate(getItemViewId(viewType), parent, false), viewType);
         if (mOnItemClickListener != null) {
+            holder.itemView.setClickable(true);
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -45,6 +46,7 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<BaseRe
             });
         }
         if (mOnItemLongClickListener != null) {
+            holder.itemView.setClickable(true);
             holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {

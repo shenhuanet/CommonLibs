@@ -1,5 +1,6 @@
 package com.shenhua.commonlibs.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,6 +9,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.AppCompatTextView;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -18,7 +20,6 @@ import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
@@ -34,7 +35,7 @@ import java.util.regex.Pattern;
  * 富文本框
  * Created by Shenhua on 8/21/2016.
  */
-public class RichTextView extends TextView {
+public class RichTextView extends AppCompatTextView {
 
     private static Pattern IMG_TAG_PATTERN = Pattern.compile("\\<img(.*?)\\>");
     private static Pattern IMAGE_WIDTH_PATTERN = Pattern.compile("width=\"(.*?)\"");
@@ -130,6 +131,7 @@ public class RichTextView extends TextView {
         return null;
     }
 
+    @SuppressLint("ParcelCreator")
     private class CallableURLSpan extends URLSpan {
         private OnURLClickListener onURLClickListener;
 

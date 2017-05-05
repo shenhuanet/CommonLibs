@@ -6,14 +6,14 @@ import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
-import android.os.Handler;
-import android.os.Message;
 import android.util.AttributeSet;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
 
+import com.shenhua.commonlibs.handler.BaseThreadHandler;
+import com.shenhua.commonlibs.handler.CommonRunnable;
 import com.shenhua.commonlibs.utils.ImageUtils;
 
 import java.io.IOException;
@@ -53,12 +53,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             parameters.setPreviewSize(1920, 1080);
             parameters.setPictureSize(1920, 1080);
             mCamera.setParameters(parameters);
-
-//            Camera.Parameters parameters = mCamera.getParameters();
-//            parameters.setPreviewSize(1280, 720);
-//            System.out.println("shenhua sout:-->"+ parameters.getMaxZoom());
-//            parameters.setZoom(20);
-//            mCamera.setParameters(parameters);
         }
     }
 
@@ -158,19 +152,27 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     public void onPictureTaken(final byte[] data, Camera camera) {
-        new Thread(new Runnable() {
+        BaseThreadHandler.getInstance().sendRunnable(new CommonRunnable<String>() {
             @Override
-            public void run() {
+            public String doChildThread() {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
                 try {
-                    final String path = ImageUtils.saveBitmapToSDCard(getContext(), bitmap, "1111", "ab", true);
-                    handler.obtainMessage(1, path).sendToTarget();
+                    return ImageUtils.saveBitmapImage(getContext(), bitmap, "1111", "shenhua-lib", true);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    handler.obtainMessage(0, "save picture failed").sendToTarget();
+                    return null;
                 }
             }
-        }).start();
+
+            @Override
+            public void doUiThread(String s) {
+                if (s == null) {
+                    listener.onFailed("save picture failed.");
+                } else {
+                    listener.onSuccess("saved:" + s);
+                }
+            }
+        });
     }
 
     @Override
@@ -179,21 +181,4 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             tone = new ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME);
         tone.startTone(ToneGenerator.TONE_PROP_BEEP);
     }
-
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if (listener != null) {
-                switch (msg.what) {
-                    case 0:
-                        listener.onFailed((String) msg.obj);
-                        break;
-                    case 1:
-                        listener.onSuccess((String) msg.obj);
-                        break;
-                }
-            }
-        }
-    };
 }

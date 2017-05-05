@@ -22,7 +22,6 @@ import rx.schedulers.Schedulers;
  */
 public class BaseThreadHandler {
 
-    private static final String TAG = "BaseThreadHandler";
     private static BaseThreadHandler sInstance = null;
     private static ExecutorService executorService = null;
     private static final int SUCCESS = 1;
@@ -247,7 +246,6 @@ public class BaseThreadHandler {
                     callback.onCanceled();
                     break;
             }
-
         }
     }
 

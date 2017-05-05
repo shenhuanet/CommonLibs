@@ -1,14 +1,14 @@
 package com.shenhua.commonlibs.widget;
 
 import android.content.Context;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 
 /**
  * Created by shenhua on 16/5/27.
  * Email shenhuanet@126.com
  */
-public class SquareImageView extends ImageView {
+public class SquareImageView extends AppCompatImageView {
 
     public SquareImageView(Context context) {
         super(context);

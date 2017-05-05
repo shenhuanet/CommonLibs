@@ -2,9 +2,9 @@ package com.shenhua.commonlibs.utils;
 
 import android.content.Context;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
+
+import com.shenhua.commonlibs.handler.BaseThreadHandler;
+import com.shenhua.commonlibs.handler.CommonRunnable;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,32 +30,25 @@ public class CommonFileUtils {
     private volatile boolean isSuccess;
     private String errorStr;
 
-    private Handler handler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if (callback != null) {
-                if (msg.what == SUCCESS) {
-                    callback.onSuccess();
-                }
-                if (msg.what == FAILED) {
-                    callback.onFailed(msg.obj.toString());
-                }
-            }
-        }
-    };
-
     public CommonFileUtils copyAssetsToSD(final Context context, final String srcPath, final String sdPath) {
-        new Thread(new Runnable() {
+        BaseThreadHandler.getInstance().sendRunnable(new CommonRunnable<Boolean>() {
             @Override
-            public void run() {
+            public Boolean doChildThread() {
                 copyAssetsToDst(context, srcPath, sdPath);
-                if (isSuccess)
-                    handler.obtainMessage(SUCCESS).sendToTarget();
-                else
-                    handler.obtainMessage(FAILED, errorStr).sendToTarget();
+                return isSuccess;
             }
-        }).start();
+
+            @Override
+            public void doUiThread(Boolean aBoolean) {
+                if (callback != null) {
+                    if (aBoolean) {
+                        callback.onSuccess();
+                    } else {
+                        callback.onFailed(errorStr);
+                    }
+                }
+            }
+        });
         return this;
     }
 

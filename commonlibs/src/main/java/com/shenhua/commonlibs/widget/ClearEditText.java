@@ -2,6 +2,7 @@ package com.shenhua.commonlibs.widget;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -11,11 +12,10 @@ import android.view.View.OnFocusChangeListener;
 import android.view.animation.Animation;
 import android.view.animation.CycleInterpolator;
 import android.view.animation.TranslateAnimation;
-import android.widget.EditText;
 
 import com.shenhua.libs.common.R;
 
-public class ClearEditText extends EditText implements OnFocusChangeListener, TextWatcher {
+public class ClearEditText extends AppCompatEditText implements OnFocusChangeListener, TextWatcher {
     private Drawable mClearDrawable;
     private boolean hasFocus;
 

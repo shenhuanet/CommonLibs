@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="rightPadding" format="dimension" />
-
-    <declare-styleable name="SlidingMenu">
-        <attr name="rightPadding" />
-    </declare-styleable>
 
     <declare-styleable name="Follow">
         <attr name="target" format="reference" />
@@ -12,5 +7,23 @@
 
     <declare-styleable name="PopContentView">
         <attr name="contentLayout" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="CircleProgressBar">
+        <attr name="ringColor" format="color" />
+        <attr name="ringProgressColor" format="color" />
+        <attr name="ringWidth" format="dimension" />
+        <attr name="textColor" format="color" />
+        <attr name="textSize" format="dimension" />
+        <attr name="max" format="integer" />
+        <attr name="textIsShow" format="boolean" />
+        <attr name="type">
+            <enum name="PENCENT_TYPE" value="0" />
+            <enum name="QUOTIENT_TYPE" value="1" />>
+        </attr>
+        <attr name="style">
+            <enum name="STROKE" value="0" />
+            <enum name="FILL" value="1" />
+        </attr>
     </declare-styleable>
 </resources>

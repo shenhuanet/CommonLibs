@@ -1,16 +1,18 @@
 package com.shenhua.commonlibs.widget;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.media.AudioManager;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
-import android.media.ToneGenerator;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.view.TextureView;
 import android.widget.Toast;
+
+import com.shenhua.commonlibs.utils.ImageUtils;
 
 /**
  * Created by shenhua on 3/29/2017.
@@ -19,12 +21,12 @@ import android.widget.Toast;
 public class TextureCameraPreview extends TextureView implements TextureView.SurfaceTextureListener, Camera.PictureCallback, Camera.ShutterCallback {
 
     private Camera mCamera;
-    private ToneGenerator tone;
+    private int index = 0;
     private OnPictureTakenListener onPictureTakenListener;
-
     private MediaRecorder mMediaRecorder;
     private boolean isRecording = false;
     private OnStartVideoListener onStartVideoListener;
+    private SurfaceTexture mSurface;
 
     public TextureCameraPreview(Context context) {
         this(context, null);
@@ -41,17 +43,30 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        mSurface = surface;
+        openCamera();
+    }
+
+    private void openCamera() {
         // 1.打开相机
-        mCamera = getCameraInstance(getContext());
+        mCamera = getCameraInstance(getContext(), index);
         if (mCamera != null) {
             // 2.设置相机参数
             Camera.Parameters parameters = mCamera.getParameters();
+            // 3.调整预览方向
+            mCamera.setDisplayOrientation(90);
+            // 4.设置预览尺寸
             parameters.setPreviewSize(1920, 1080);
             parameters.setPictureSize(1920, 1080);
+            // 5.调整拍照图片方向
+            if (index == 0)
+                parameters.setRotation(90);
+            if (index == 1)
+                parameters.setRotation(270);
             mCamera.setParameters(parameters);
-            // 3.开始相机预览
+            // 6.开始相机预览
             try {
-                mCamera.setPreviewTexture(surface);
+                mCamera.setPreviewTexture(mSurface);
                 mCamera.startPreview();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -62,17 +77,20 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        releaseCamera();
+        return true;
+    }
+
+    private void releaseCamera() {
         if (mCamera != null) {
             mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
         }
-        return true;
     }
 
     @Override
@@ -80,10 +98,10 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
 
     }
 
-    public static Camera getCameraInstance(Context context) {
+    public static Camera getCameraInstance(Context context, int i) {
         Camera c = null;
         try {
-            c = Camera.open(0);
+            c = Camera.open(i);
         } catch (Exception e) {
             Toast.makeText(context, "相机打开失败", Toast.LENGTH_SHORT).show();
         }
@@ -109,22 +127,37 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
         }
     }
 
-    @Override
-    public void onPictureTaken(final byte[] data, Camera camera) {
-        if (onPictureTakenListener != null) {
-            onPictureTakenListener.onSuccess(data);
+    public void switchCamera(int index) {
+        if (isRecording) {
+            stopRecord();
         }
+        releaseCamera();
+        this.index = index;
+        openCamera();
+    }
+
+    @Override
+    public void onPictureTaken(byte[] data, Camera camera) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        if (index == 1) {
+            bitmap = ImageUtils.reversalBitmap(bitmap, -1, 1);
+        }
+        if (onPictureTakenListener != null) {
+            onPictureTakenListener.onSuccess(bitmap);
+        }
+
+        // 使拍照结束后重新预览
+        releaseCamera();
+        openCamera();
     }
 
     @Override
     public void onShutter() {
-        if (tone == null)
-            tone = new ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME);
-        tone.startTone(ToneGenerator.TONE_PROP_BEEP);
+
     }
 
     public interface OnPictureTakenListener {
-        void onSuccess(byte[] data);
+        void onSuccess(Bitmap bitmap);
 
         void onFailed(String msg);
     }
